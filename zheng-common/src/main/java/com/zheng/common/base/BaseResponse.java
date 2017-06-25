@@ -13,7 +13,6 @@ public class BaseResponse {
 
     private String code;
     private String message;
-    private String httpCode;
 
     private Object result;
 
@@ -21,14 +20,12 @@ public class BaseResponse {
         ResponseCode responseCode = ResponseCode.toEnum(ResponseCode.SUCCESS.toString());
         this.code = responseCode.toString();
         this.message = responseCode.message;
-        this.httpCode = responseCode.httpCode;
         this.requestId =  UUID.randomUUID().toString();
     }
     public BaseResponse(String requestId){
         ResponseCode responseCode = ResponseCode.toEnum(ResponseCode.SUCCESS.toString());
         this.code = responseCode.toString();
         this.message = responseCode.message;
-        this.httpCode = responseCode.httpCode;
         this.requestId = requestId;
     }
     /**
@@ -49,7 +46,6 @@ public class BaseResponse {
     public static  <T> T setResponse(BaseResponse response,String code){
         ResponseCode error = ResponseCode.toEnum(code);
         response.setCode(error.code);
-        response.setHttpCode(error.httpCode);
         response.setMessage(error.message);
         response.setRequestId(response.getRequestId());
         return (T)response;
@@ -73,7 +69,6 @@ public class BaseResponse {
     public static <T> T setResponse(BaseResponse response,String code,String message){
         ResponseCode error = ResponseCode.toEnum(code);
         response.setCode(error.code);
-        response.setHttpCode(error.httpCode);
         response.setMessage(error.message.concat( message));
         response.setRequestId(response.getRequestId());
         return (T)response;
@@ -81,7 +76,6 @@ public class BaseResponse {
     public  static <T> T  responseWithName(BaseResponse response,String code, Object msg){
         ResponseCode error = ResponseCode.toEnum(code);
         response.setCode(error.code);
-        response.setHttpCode(error.httpCode);
         response.setMessage(msg.toString());
         response.setRequestId(response.getRequestId());
         return (T)response;
@@ -110,13 +104,7 @@ public class BaseResponse {
         this.message = message;
     }
 
-    public String getHttpCode() {
-        return httpCode;
-    }
 
-    public void setHttpCode(String httpCode) {
-        this.httpCode = httpCode;
-    }
 
     public Object getResult() {
         return result;
