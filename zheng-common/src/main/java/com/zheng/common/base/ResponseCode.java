@@ -64,6 +64,8 @@ public enum ResponseCode {
     NO_AUTHORITY("9000001","无资源访问权限"),
     SESSION_EXPIRED("9000002","会话过期"),
     UNAUTHENTICATED("9000003","未经身份验证"),
+    INVALID_SYSTEM("9000004","无效系统，请注册到权限系统！"),
+
     //client end
     THE_GOODS_ALREADY_OVERDUE("20010","the goods already overdue"),//该商品已经过期
     NOTMARKFINISH("90001","mark not  finished");//卷子未批完无法生成综合报,

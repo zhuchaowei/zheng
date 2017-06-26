@@ -1,11 +1,13 @@
 package com.zheng.common.base;
 
+import com.zheng.common.exception.UpmsSystemException;
 import com.zheng.common.util.PropertiesFileUtil;
 import org.apache.shiro.authz.UnauthenticatedException;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.session.InvalidSessionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -42,6 +44,9 @@ public abstract class BaseController {
 		}
 		if(exception instanceof UnauthenticatedException){
 			return BaseResponse.setResponse(baseResponse,ResponseCode.UNAUTHENTICATED.toString());
+		}
+		if (exception instanceof UpmsSystemException) {
+			return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_SYSTEM.toString());
 		}
 		// shiro会话已过期异常
 		if (exception instanceof InvalidSessionException) {

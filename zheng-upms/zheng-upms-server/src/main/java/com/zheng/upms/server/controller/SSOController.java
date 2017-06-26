@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.zheng.common.base.BaseController;
 import com.zheng.common.base.BaseResponse;
 import com.zheng.common.base.ResponseCode;
+import com.zheng.common.exception.UpmsSystemException;
 import com.zheng.common.util.RedisUtil;
 import com.zheng.upms.client.shiro.session.UpmsSession;
 import com.zheng.upms.client.shiro.session.UpmsSessionDao;
@@ -78,7 +79,7 @@ public class SSOController extends BaseController {
                 .andNameEqualTo(appid);
         int count = upmsSystemService.countByExample(upmsSystemExample);
         if (0 == count) {
-            throw new RuntimeException(String.format("未注册的系统:%s", appid));
+            throw new UpmsSystemException(String.format("未注册的系统:%s", appid));
         }
         return "redirect:/sso/login11?backurl=" + URLEncoder.encode(backurl, "utf-8");
     }
@@ -151,7 +152,7 @@ public class SSOController extends BaseController {
         String username=jsonObject.getString("username");
         String password=jsonObject.getString("password");
         String rememberMe=jsonObject.getString("rememberMe");
-
+        String appId = request.getHeader("appId");
         if (StringUtils.isBlank(username)) {
             return BaseResponse.setResponse(baseResponse,ResponseCode.PARAMETER_MISS.toString(),".username");
         }
