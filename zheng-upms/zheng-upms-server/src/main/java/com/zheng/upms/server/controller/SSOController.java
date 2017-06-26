@@ -1,6 +1,9 @@
 package com.zheng.upms.server.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.zheng.common.base.BaseController;
+import com.zheng.common.base.BaseResponse;
+import com.zheng.common.base.ResponseCode;
 import com.zheng.common.util.RedisUtil;
 import com.zheng.upms.client.shiro.session.UpmsSession;
 import com.zheng.upms.client.shiro.session.UpmsSessionDao;
@@ -25,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -76,8 +80,39 @@ public class SSOController extends BaseController {
         if (0 == count) {
             throw new RuntimeException(String.format("未注册的系统:%s", appid));
         }
-        return "redirect:/sso/login?backurl=" + URLEncoder.encode(backurl, "utf-8");
+        return "redirect:/sso/login11?backurl=" + URLEncoder.encode(backurl, "utf-8");
     }
+
+    @RequestMapping(value = "/login11", method = RequestMethod.GET)
+    @ResponseBody
+    public BaseResponse login11(HttpServletRequest request){
+        BaseResponse baseResponse=new BaseResponse();
+        Subject subject = SecurityUtils.getSubject();
+        Session session = subject.getSession();
+        String serverSessionId = session.getId().toString();
+        // 判断是否已登录，如果已登录，则回跳
+        String code = RedisUtil.get(ZHENG_UPMS_SERVER_SESSION_ID + "_" + serverSessionId);
+        // code校验值
+        if (StringUtils.isNotBlank(code)) {
+            // 回跳
+            String backurl = request.getParameter("backurl");
+            String username = (String) subject.getPrincipal();
+            if (StringUtils.isBlank(backurl)) {
+                backurl = "/";
+            } else {
+                if (backurl.contains("?")) {
+                    backurl += "&upms_code=" + code + "&upms_username=" + username;
+                } else {
+                    backurl += "?upms_code=" + code + "&upms_username=" + username;
+                }
+            }
+            _log.debug("认证中心帐号通过，带code回跳：{}", backurl);
+            baseResponse.setResult(backurl);
+            return baseResponse;
+        }
+        return BaseResponse.setResponse(baseResponse, ResponseCode.NOT_LOGIN.toString());
+    }
+
 
     @ApiOperation(value = "登录")
     @RequestMapping(value = "/login", method = RequestMethod.GET)
@@ -106,6 +141,62 @@ public class SSOController extends BaseController {
         }
         return "/sso/login.jsp";
     }
+
+    @ApiOperation(value = "登录")
+    @RequestMapping(value = "/loginForClient", method = RequestMethod.POST,produces = "application/json; charset=utf-8")
+    @ResponseBody
+    public BaseResponse loginForClient(HttpServletRequest request, HttpServletResponse response, ModelMap modelMap,@RequestBody String req) {
+        BaseResponse baseResponse=new BaseResponse();
+        JSONObject jsonObject=JSONObject.parseObject(req);
+        String username=jsonObject.getString("username");
+        String password=jsonObject.getString("password");
+        String rememberMe=jsonObject.getString("rememberMe");
+
+        if (StringUtils.isBlank(username)) {
+            return BaseResponse.setResponse(baseResponse,ResponseCode.PARAMETER_MISS.toString(),".username");
+        }
+        if (StringUtils.isBlank(password)) {
+            return BaseResponse.setResponse(baseResponse,ResponseCode.PARAMETER_MISS.toString(),".password");
+        }
+        Subject subject = SecurityUtils.getSubject();
+        Session session = subject.getSession();
+        String sessionId = session.getId().toString();
+        // 判断是否已登录，如果已登录，则回跳，防止重复登录
+        String hasCode = RedisUtil.get(ZHENG_UPMS_SERVER_SESSION_ID + "_" + sessionId);
+        // code校验值
+        if (StringUtils.isBlank(hasCode)) {
+            // 使用shiro认证
+            UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password);
+            try {
+                if (BooleanUtils.toBoolean(rememberMe)) {
+                    usernamePasswordToken.setRememberMe(true);
+                } else {
+                    usernamePasswordToken.setRememberMe(false);
+                }
+                subject.login(usernamePasswordToken);
+            } catch (UnknownAccountException e) {
+                return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_USERNAME.toString(),"帐号不存在！");
+            } catch (IncorrectCredentialsException e) {
+                return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_PASSWORD.toString(),"密码错误！");
+            } catch (LockedAccountException e) {
+                return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_ACCOUNT.toString(),"帐号已锁定！");
+            }
+            // 更新session状态
+            upmsSessionDao.updateStatus(sessionId, UpmsSession.OnlineStatus.on_line);
+            // 全局会话sessionId列表，供会话管理
+            RedisUtil.lpush(ZHENG_UPMS_SERVER_SESSION_IDS, sessionId.toString());
+            // 默认验证帐号密码正确，创建code
+            String code = UUID.randomUUID().toString();
+            // 全局会话的code
+            RedisUtil.set(ZHENG_UPMS_SERVER_SESSION_ID + "_" + sessionId, code, (int) subject.getSession().getTimeout() / 1000);
+            // code校验值
+            RedisUtil.set(ZHENG_UPMS_SERVER_CODE + "_" + code, code, (int) subject.getSession().getTimeout() / 1000);
+            baseResponse.setResult(code);
+        }
+       return  baseResponse;
+    }
+
+
 
     @ApiOperation(value = "登录")
     @RequestMapping(value = "/login", method = RequestMethod.POST)
