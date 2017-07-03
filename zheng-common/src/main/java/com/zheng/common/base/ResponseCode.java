@@ -20,7 +20,7 @@ public enum ResponseCode {
     EMPTY_PASSWORD("10102", "Password cannot be empty"),
     INVALID_USERNAME("10103", "Account does not exist"),
     INVALID_PASSWORD("10104", "Password error"),
-    INVALID_ACCOUNT("10105", "Invalid account"),
+    INVALID_LOCK("10105", " Account IS LOCKED"),
     //service error , 500 begin
     SERVICE_ERROR( "500", "The request service process error."),
     //server end

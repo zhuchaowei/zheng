@@ -2,23 +2,26 @@ package com.zheng.common.base;
 
 import com.zheng.common.exception.UpmsSystemException;
 import com.zheng.common.util.PropertiesFileUtil;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.LockedAccountException;
+import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authz.UnauthenticatedException;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.session.InvalidSessionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 
 /**
  * 控制器基类
  * Created by ZhangShuzheng on 2017/2/4.
  */
+@RestControllerAdvice
 public abstract class BaseController {
 
 	private final static Logger _log = LoggerFactory.getLogger(BaseController.class);
@@ -51,6 +54,19 @@ public abstract class BaseController {
 		// shiro会话已过期异常
 		if (exception instanceof InvalidSessionException) {
 			return BaseResponse.setResponse(baseResponse,ResponseCode.SESSION_EXPIRED.toString());
+		}
+		//账号不存在
+		if(exception instanceof UnknownAccountException){
+			return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_USERNAME.toString());
+		}
+		//密码 不正确
+		if(exception instanceof IncorrectCredentialsException){
+			return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_PASSWORD.toString());
+
+		}
+		//被锁定
+		if(exception instanceof LockedAccountException){
+			return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_LOCK.toString());
 		}
 
 		return BaseResponse.setResponse(baseResponse,ResponseCode.SERVICE_ERROR.toString());

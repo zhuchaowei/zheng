@@ -1,7 +1,7 @@
 package com.zheng.upms.client.shiro.realm;
 
-import com.zheng.common.util.MD5Util;
-import com.zheng.common.util.PropertiesFileUtil;
+import com.zheng.common.util.RedisUtil;
+import com.zheng.upms.client.shiro.token.StatelessToken;
 import com.zheng.upms.dao.model.UpmsPermission;
 import com.zheng.upms.dao.model.UpmsRole;
 import com.zheng.upms.dao.model.UpmsUser;
@@ -25,6 +25,12 @@ public class StateRealm extends AuthorizingRealm {
     @Autowired
     private UpmsApiService upmsApiService;
 
+
+    @Override
+    public boolean supports(AuthenticationToken token) {
+        return token instanceof StatelessToken;
+    }
+
     /**
      * 授权：验证权限时调用
      * @param principalCollection
@@ -34,7 +40,9 @@ public class StateRealm extends AuthorizingRealm {
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         String username = (String) principalCollection.getPrimaryPrincipal();
         UpmsUser upmsUser = upmsApiService.selectUpmsUserByUsername(username);
-
+        if (upmsUser == null) {
+            throw new UnknownAccountException("无效用户");
+        }
         // 当前用户所有角色
         List<UpmsRole> upmsRoles = upmsApiService.selectUpmsRoleByUpmsUserId(upmsUser.getUserId());
         Set<String> roles = new HashSet<>();
@@ -66,19 +74,31 @@ public class StateRealm extends AuthorizingRealm {
      */
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
-        String username = (String) authenticationToken.getPrincipal();
-        String password = new String((char[]) authenticationToken.getCredentials());
-        // 查询用户信息
-        UpmsUser upmsUser = upmsApiService.selectUpmsUserByUsername(username);
-        if (null == upmsUser) {
-            throw new UnknownAccountException();
-        }
-        if (!upmsUser.getPassword().equals(MD5Util.MD5(password + upmsUser.getSalt()))) {
-            throw new IncorrectCredentialsException();
-        }
-        if (upmsUser.getLocked() == 1) {
-            throw new LockedAccountException();
-        }
-        return new SimpleAuthenticationInfo(username, password, getName());
+        StatelessToken statelessToken = (StatelessToken)authenticationToken;
+        String username = (String)statelessToken.getPrincipal();//不能为null,否则会报错的.
+        String usernameToken = RedisUtil.get("username_token_"+username);
+        // username = (String) authenticationToken.getPrincipal();
+        SimpleAuthenticationInfo authInfo = new SimpleAuthenticationInfo(username, usernameToken, getName());
+        return authInfo;
     }
+
+    /**
+     * {@inheritDoc}
+     * 重写函数，如果不是web app登录，则用无状态授权
+     */
+    @Override
+    public boolean isPermitted(PrincipalCollection principals, String permission) {
+        if (principals.fromRealm(getName()).isEmpty()) {
+            return false;
+        }
+        else {
+            return super.isPermitted(principals, permission);
+        }
+    }
+
+    private String getPassword(String username) {//得到密钥，此处硬编码一个
+        UpmsUser upmsUser = upmsApiService.selectUpmsUserByUsername(username);
+        return upmsUser.getPassword();
+    }
+
 }

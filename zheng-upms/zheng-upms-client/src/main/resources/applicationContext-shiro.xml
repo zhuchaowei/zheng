@@ -17,16 +17,20 @@
         <property name="unauthorizedUrl" value="${zheng.upms.unauthorizedUrl}"/>
         <property name="filters">
             <util:map>
+<!--
                 <entry key="authc" value-ref="upmsAuthenticationFilter"/>
+-->
+                <entry key="statelessAuthc" value-ref="statalessAuthenticationFileter"/>
+
             </util:map>
         </property>
         <property name="filterChainDefinitions">
             <value>
-                /manage/** = upmsSessionForceLogout,authc
                 /manage/index = user
                 /druid/** = user
                 /swagger-ui.html = user
                 /resources/** = anon
+                /api/** = statelessAuthc
                 /** = anon
             </value>
         </property>
@@ -35,35 +39,47 @@
     <!-- 重写authc过滤器 -->
     <bean id="upmsAuthenticationFilter" class="com.zheng.upms.client.shiro.filter.UpmsAuthenticationFilter"/>
 
+    <bean id="statalessAuthenticationFileter" class="com.zheng.upms.client.shiro.filter.StatelessAuthcFilter"/>
     <!-- 强制退出会话过滤器 -->
     <bean id="upmsSessionForceLogout" class="com.zheng.upms.client.shiro.filter.UpmsSessionForceLogoutFilter"/>
 
     <!-- 安全管理器 -->
     <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
         <property name="realms">
-            <list><ref bean="upmsRealm"/></list>
+            <list>
+                <ref bean="statelessRealm"/>
+            </list>
         </property>
+        <property name="subjectDAO.sessionStorageEvaluator.sessionStorageEnabled" value="false"/>
         <property name="sessionManager" ref="sessionManager"/>
-        <property name="rememberMeManager" ref="rememberMeManager"/>
+        <property name="subjectFactory" ref="statelessSubjectFactory"/>
+<!--
+        <property name="sessionManager" ref="sessionManager"/>
+-->
+        <!--<property name="rememberMeManager" ref="rememberMeManager"/>-->
     </bean>
 
     <!-- realm实现，继承自AuthorizingRealm -->
-    <bean id="upmsRealm" class="com.zheng.upms.client.shiro.realm.UpmsRealm"></bean>
+    <!--<bean id="upmsRealm" class="com.zheng.upms.client.shiro.realm.UpmsRealm"></bean>-->
 
+    <bean id="statelessRealm" class="com.zheng.upms.client.shiro.realm.StateRealm"/>
     <!-- 会话管理器 -->
-    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
-        <!-- 全局session超时时间 -->
-        <property name="globalSessionTimeout" value="${zheng.upms.session.timeout}"/>
-        <!-- sessionDAO -->
-        <property name="sessionDAO" ref="sessionDAO"/>
-        <property name="sessionIdCookieEnabled" value="true"/>
-        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+    <bean id="sessionManager" class="org.apache.shiro.session.mgt.DefaultSessionManager">
         <property name="sessionValidationSchedulerEnabled" value="false"/>
-        <property name="sessionListeners">
-            <list><ref bean="sessionListener"/></list>
-        </property>
-        <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
+    <!--<bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">-->
+        <!--&lt;!&ndash; 全局session超时时间 &ndash;&gt;-->
+        <!--<property name="globalSessionTimeout" value="${zheng.upms.session.timeout}"/>-->
+        <!--&lt;!&ndash; sessionDAO &ndash;&gt;-->
+        <!--<property name="sessionDAO" ref="sessionDAO"/>-->
+        <!--<property name="sessionIdCookieEnabled" value="true"/>-->
+        <!--<property name="sessionIdCookie" ref="sessionIdCookie"/>-->
+        <!--<property name="sessionValidationSchedulerEnabled" value="false"/>-->
+        <!--<property name="sessionListeners">-->
+            <!--<list><ref bean="sessionListener"/></list>-->
+        <!--</property>-->
+        <!--<property name="sessionFactory" ref="sessionFactory"/>-->
+    <!--</bean>-->
 
     <!-- 会话DAO，可重写，持久化session -->
     <bean id="sessionDAO" class="com.zheng.upms.client.shiro.session.UpmsSessionDao"/>
@@ -83,7 +99,8 @@
 
     <!-- session工厂 -->
     <bean id="sessionFactory" class="com.zheng.upms.client.shiro.session.UpmsSessionFactory"/>
-
+    <!--无状态 subjectFactory 工厂-->
+    <bean id="statelessSubjectFactory" class="com.zheng.upms.client.shiro.subjectfactory.StatelessDefaultSubjectFactory"/>
     <!-- rememberMe管理器 -->
     <bean id="rememberMeManager" class="org.apache.shiro.web.mgt.CookieRememberMeManager">
         <!-- rememberMe cookie加密的密钥 建议每个项目都不一样 默认AES算法 密钥长度（128 256 512 位）-->
@@ -114,5 +131,7 @@
 
     <!-- Shiro生命周期处理器-->
     <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+
 
 </beans>

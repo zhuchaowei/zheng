@@ -180,7 +180,7 @@ public class SSOController extends BaseController {
             } catch (IncorrectCredentialsException e) {
                 return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_PASSWORD.toString(),"密码错误！");
             } catch (LockedAccountException e) {
-                return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_ACCOUNT.toString(),"帐号已锁定！");
+                return BaseResponse.setResponse(baseResponse,ResponseCode.INVALID_LOCK.toString(),"帐号已锁定！");
             }
             // 更新session状态
             upmsSessionDao.updateStatus(sessionId, UpmsSession.OnlineStatus.on_line);
