@@ -74,6 +74,26 @@ public class UpmsUser implements Serializable {
     private Byte locked;
 
     /**
+     * 用户类型  0 普通用户 1 教研主任 2教研员  3 督导主任  4 督学  5 校长
+     */
+    private Byte userType;
+    /**
+     * 省
+     */
+    private String provinceCode;
+    private String provinceName;
+    /**
+     * 市
+     */
+    private String cityCode;
+    private String cityName;
+    /**
+     * 县
+     */
+    private String countyCode;
+    private String countyName;
+
+    /**
      * 创建时间
      *
      * @mbg.generated
@@ -189,6 +209,62 @@ public class UpmsUser implements Serializable {
         sb.append(", ctime=").append(ctime);
         sb.append("]");
         return sb.toString();
+    }
+
+    public Byte getUserType() {
+        return userType;
+    }
+
+    public void setUserType(Byte userType) {
+        this.userType = userType;
+    }
+
+    public String getProvinceCode() {
+        return provinceCode;
+    }
+
+    public void setProvinceCode(String provinceCode) {
+        this.provinceCode = provinceCode;
+    }
+
+    public String getProvinceName() {
+        return provinceName;
+    }
+
+    public void setProvinceName(String provinceName) {
+        this.provinceName = provinceName;
+    }
+
+    public String getCityCode() {
+        return cityCode;
+    }
+
+    public void setCityCode(String cityCode) {
+        this.cityCode = cityCode;
+    }
+
+    public String getCityName() {
+        return cityName;
+    }
+
+    public void setCityName(String cityName) {
+        this.cityName = cityName;
+    }
+
+    public String getCountyCode() {
+        return countyCode;
+    }
+
+    public void setCountyCode(String countyCode) {
+        this.countyCode = countyCode;
+    }
+
+    public String getCountyName() {
+        return countyName;
+    }
+
+    public void setCountyName(String countyName) {
+        this.countyName = countyName;
     }
 
     @Override

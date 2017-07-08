@@ -13,6 +13,18 @@
     <result column="sex" jdbcType="TINYINT" property="sex" />
     <result column="locked" jdbcType="TINYINT" property="locked" />
     <result column="ctime" jdbcType="BIGINT" property="ctime" />
+
+    <result column="user_type" jdbcType="TINYINT" property="userType" />
+    <result column="province_code" jdbcType="VARCHAR" property="provinceCode" />
+    <result column="province_name" jdbcType="VARCHAR" property="provinceName" />
+    <result column="city_code" jdbcType="VARCHAR" property="cityCode" />
+    <result column="city_name" jdbcType="VARCHAR" property="cityName" />
+    <result column="county_code" jdbcType="VARCHAR" property="countyCode" />
+    <result column="county_name" jdbcType="VARCHAR" property="countyName" />
+
+
+
+
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -73,7 +85,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    user_id, username, password, salt, realname, avatar, phone, email, sex, locked, ctime
+    user_id, username, password, salt, realname, avatar, phone, email, sex, locked, ctime , user_type , province_code, province_name , city_code ,city_name,county_code,county_name
   </sql>
   <select id="selectByExample" parameterType="com.zheng.upms.dao.model.UpmsUserExample" resultMap="BaseResultMap">
     select
@@ -112,11 +124,11 @@
     insert into upms_user (username, password, salt, 
       realname, avatar, phone, 
       email, sex, locked, 
-      ctime)
+      ctime,user_type,province_code,province_name,city_code,city_name,county_code,county_name)
     values (#{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{salt,jdbcType=VARCHAR}, 
       #{realname,jdbcType=VARCHAR}, #{avatar,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, 
       #{email,jdbcType=VARCHAR}, #{sex,jdbcType=TINYINT}, #{locked,jdbcType=TINYINT}, 
-      #{ctime,jdbcType=BIGINT})
+      #{ctime,jdbcType=BIGINT},#{userType},#{provinceCode},#{provinceName},#{cityCode},#{cityName},#{countyCode},#{countyName})
   </insert>
   <insert id="insertSelective" parameterType="com.zheng.upms.dao.model.UpmsUser">
     <selectKey keyProperty="userId" order="AFTER" resultType="java.lang.Integer">
@@ -154,6 +166,28 @@
       <if test="ctime != null">
         ctime,
       </if>
+
+      <if test="userType != null">
+        user_type,
+      </if>
+      <if test="provinceCode != null">
+        province_code,
+      </if>
+      <if test="provinceName != null">
+        province_name,
+      </if>
+      <if test="cityCode != null">
+        city_code,
+      </if>
+      <if test="cityName != null">
+        city_name,
+      </if>
+      <if test="countyCode != null">
+        county_code,
+      </if>
+      <if test="countyName != null">
+        county_name,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="username != null">
@@ -185,6 +219,28 @@
       </if>
       <if test="ctime != null">
         #{ctime,jdbcType=BIGINT},
+      </if>
+
+      <if test="userType != null">
+        #{userType,jdbcType=TINYINT},
+      </if>
+      <if test="provinceCode != null">
+        #{provinceCode,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceName != null">
+        #{provinceName,jdbcType=VARCHAR},
+      </if>
+      <if test="cityCode != null">
+        #{cityCode,jdbcType=VARCHAR},
+      </if>
+      <if test="cityName != null">
+        #{cityName,jdbcType=VARCHAR},
+      </if>
+      <if test="countyCode != null">
+        #{countyCode,jdbcType=VARCHAR},
+      </if>
+      <if test="countyName != null">
+        #{countyName,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -230,6 +286,27 @@
       <if test="record.ctime != null">
         ctime = #{record.ctime,jdbcType=BIGINT},
       </if>
+      <if test="record.userType != null">
+        user_type = #{record.userType,jdbcType=TINYINT},
+      </if>
+      <if test="record.provinceCode != null">
+        province_code = #{record.provinceCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.provinceName != null">
+        province_name = #{record.provinceName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.cityCode != null">
+        city_code = #{record.cityCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.cityName != null">
+        city_name = #{record.cityName,jdbcType=VARCHAR},
+      </if>
+      <if test="record.countyCode != null">
+        county_code = #{record.countyCode,jdbcType=VARCHAR},
+      </if>
+      <if test="record.countyName != null">
+        county_name = #{record.countyName,jdbcType=VARCHAR},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -247,7 +324,14 @@
       email = #{record.email,jdbcType=VARCHAR},
       sex = #{record.sex,jdbcType=TINYINT},
       locked = #{record.locked,jdbcType=TINYINT},
-      ctime = #{record.ctime,jdbcType=BIGINT}
+      ctime = #{record.ctime,jdbcType=BIGINT},
+      user_type = #{record.userType,jdbcType=TINYINT},
+      province_code = #{record.provinceCode,jdbcType=VARCHAR},
+      province_name = #{record.provinceName,jdbcType=VARCHAR},
+      city_code = #{record.cityCode,jdbcType=VARCHAR},
+      city_name = #{record.cityName,jdbcType=VARCHAR},
+      county_code = #{record.countyCode,jdbcType=VARCHAR},
+      county_name = #{record.countyName,jdbcType=VARCHAR}
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -285,6 +369,27 @@
       <if test="ctime != null">
         ctime = #{ctime,jdbcType=BIGINT},
       </if>
+      <if test="userType != null">
+        user_type = #{userType,jdbcType=TINYINT},
+      </if>
+      <if test="provinceCode != null">
+        province_code = #{provinceCode,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceName != null">
+        province_name = #{provinceName,jdbcType=VARCHAR},
+      </if>
+      <if test="cityCode != null">
+        city_code = #{cityCode,jdbcType=VARCHAR},
+      </if>
+      <if test="cityName != null">
+        city_name = #{cityName,jdbcType=VARCHAR},
+      </if>
+      <if test="countyCode != null">
+        county_code = #{countyCode,jdbcType=VARCHAR},
+      </if>
+      <if test="countyName != null">
+        county_name = #{countyName,jdbcType=VARCHAR},
+      </if>
     </set>
     where user_id = #{userId,jdbcType=INTEGER}
   </update>
@@ -299,7 +404,14 @@
       email = #{email,jdbcType=VARCHAR},
       sex = #{sex,jdbcType=TINYINT},
       locked = #{locked,jdbcType=TINYINT},
-      ctime = #{ctime,jdbcType=BIGINT}
+      ctime = #{ctime,jdbcType=BIGINT},
+      user_type = #{userType,jdbcType=TINYINT},
+      province_code = #{provinceCode,jdbcType=VARCHAR},
+      province_name = #{provinceName,jdbcType=VARCHAR},
+      city_code = #{cityCode,jdbcType=VARCHAR},
+      city_name = #{cityName,jdbcType=VARCHAR},
+      county_code = #{countyCode,jdbcType=VARCHAR},
+      county_name = #{countyName,jdbcType=VARCHAR}
     where user_id = #{userId,jdbcType=INTEGER}
   </update>
   <cache type="org.mybatis.caches.ehcache.LoggingEhcache" />
